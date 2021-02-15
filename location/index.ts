@@ -14,23 +14,32 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
     const database = mongoClient.db("vacation");
     const collection = database.collection("locations");
 
+    let resBody: any = {};
+
     switch(req.method){
         case "GET":
-            await getLocations(collection);
+            resBody = await getLocations(collection);
+            break;
         case "POST":
             await validateLocation(req.body);
             await addLocation(mapLocation(req.body, {}), collection);
+            break;
     }
+    console.log("response--------------")
+    console.log(resBody)
 
     context.res = {
         status: 200,
+        body: JSON.stringify(resBody)
     };
 
 };
 
 //REQUEST HANDLERS
-const getLocations = async (collection: any): Promise<Location[]> => {
-    return await collection.find().toArray();
+const getLocations = async (collection: any): Promise<any> => {
+    const locations = await collection.find().toArray();
+    console.log(locations)
+    return locations;
 }
 
 const addLocation = async (location: Location, collection: any) => {
@@ -58,6 +67,8 @@ const validateLocation = async (requestBody: any) => {
 //MAPPERS
 
 const mapLocation = (requestBody: any, userObj: any): Location => {
+    console.log("requestBody")
+    console.log(requestBody)
     return {
         uuid: uuid(),
         name: requestBody.name,
