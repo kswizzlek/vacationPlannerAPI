@@ -1,8 +1,9 @@
 import { AzureFunction, Context, HttpRequest } from "@azure/functions";
 import { MongoClient } from 'mongodb';
 import { v4 as uuid } from 'uuid';
+import * as Auth0 from 'azure-functions-auth0';
 
-// DATABASE CONNECTION
+// DATABASE CONNECTION - TODO: move to database folder
 const cosmosMongoDbConnString = "mongodb://gregballsack:YsM7Ntyo8yfYDFwllyzG8HEGGtTjGMomZWSngYpwPIv0vA8VPovpanWQfBQDs8rdFBLJeDripDaDWwEoAplMoA%3D%3D@gregballsack.mongo.cosmos.azure.com:10255/?ssl=true&appName=@gregballsack@";
 const mongoClient = new MongoClient(cosmosMongoDbConnString);
 
@@ -21,7 +22,6 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
             resBody = await getLocations(collection);
             break;
         case "POST":
-            await validateLocation(req.body);
             await addLocation(mapLocation(req.body, {}), collection);
             break;
     }
@@ -60,8 +60,14 @@ const voteOnLocation = (locationId: number, likedTheLocation: boolean) => {
 
 //VALITATORS
 
-const validateLocation = async (requestBody: any) => {
-
+const validateLocation = (requestBody: any): string[] => {
+    if(!requestBody) return ['You must include a location in the request body to create a location'];
+    const validationErrors: string[] = [];
+    if(!requestBody.name) validationErrors.push('You must include a name to create a location');
+    if(!requestBody.description) validationErrors.push('You must include a description to create a location');
+    if(typeof requestBody.name != 'string') validationErrors.push('name must be a string');
+    if(typeof requestBody.description !== 'string') validationErrors.push('description must be a string');
+    return validationErrors;
 }
 
 //MAPPERS
@@ -76,6 +82,7 @@ const mapLocation = (requestBody: any, userObj: any): Location => {
     }
 }
 
+//TODO: move into models
 interface Location {
     uuid: string
     name: string
@@ -95,4 +102,11 @@ interface Comment {
     comment: string
 }
 
-export default httpTrigger;
+//TODO: move out to auth folder
+const auth0 = Auth0({
+    clientId: 'zV5q9ZYrZXB7JrFT45TN1TwJgeolTCYY',
+    clientSecret: '0_e3Axl-p5IUlJwjWFkGfGxhsGWc1crVCy6_tYZEpnZaPQhKEo_WLXRN7T2JDd8a',
+    domain: 'dev-h9gt8mjz.us.auth0.com'
+  });
+
+export default auth0(httpTrigger);
