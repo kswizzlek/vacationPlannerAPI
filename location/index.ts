@@ -107,6 +107,6 @@ const auth0 = Auth0({
     clientId: 'zV5q9ZYrZXB7JrFT45TN1TwJgeolTCYY',
     clientSecret: '0_e3Axl-p5IUlJwjWFkGfGxhsGWc1crVCy6_tYZEpnZaPQhKEo_WLXRN7T2JDd8a',
     domain: 'dev-h9gt8mjz.us.auth0.com'
-  });
+});
 
 export default auth0(httpTrigger);
