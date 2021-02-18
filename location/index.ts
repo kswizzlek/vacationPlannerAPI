@@ -1,7 +1,7 @@
 import { AzureFunction, Context, HttpRequest } from "@azure/functions";
-import { MongoClient } from 'mongodb';
 import { v4 as uuid } from 'uuid';
-import * as Auth0 from 'azure-functions-auth0';
+import {MongoClient} from 'mongodb';
+//import * as Auth0 from 'azure-functions-auth0';
 
 // DATABASE CONNECTION - TODO: move to database folder
 const cosmosMongoDbConnString = "mongodb://gregballsack:YsM7Ntyo8yfYDFwllyzG8HEGGtTjGMomZWSngYpwPIv0vA8VPovpanWQfBQDs8rdFBLJeDripDaDWwEoAplMoA%3D%3D@gregballsack.mongo.cosmos.azure.com:10255/?ssl=true&appName=@gregballsack@";
@@ -103,10 +103,10 @@ interface Comment {
 }
 
 //TODO: move out to auth folder
-const auth0 = Auth0({
-    clientId: 'zV5q9ZYrZXB7JrFT45TN1TwJgeolTCYY',
-    clientSecret: '0_e3Axl-p5IUlJwjWFkGfGxhsGWc1crVCy6_tYZEpnZaPQhKEo_WLXRN7T2JDd8a',
-    domain: 'dev-h9gt8mjz.us.auth0.com'
-});
+// const auth0 = Auth0({
+//     clientId: 'zV5q9ZYrZXB7JrFT45TN1TwJgeolTCYY',
+//     clientSecret: '0_e3Axl-p5IUlJwjWFkGfGxhsGWc1crVCy6_tYZEpnZaPQhKEo_WLXRN7T2JDd8a',
+//     domain: 'dev-h9gt8mjz.us.auth0.com'
+// });
 
-export default auth0(httpTrigger);
+export default httpTrigger;

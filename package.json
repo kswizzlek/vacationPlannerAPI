@@ -10,7 +10,6 @@
     "test": "echo \"No tests yet...\""
   },
   "dependencies": {
-    "azure-functions-auth0": "^1.0.1",
     "express-jwt": "^6.0.0",
     "mongodb": "^3.6.4",
     "request": "^2.88.2",
