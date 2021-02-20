@@ -1,26 +1,45 @@
 import { AzureFunction, Context, HttpRequest } from "@azure/functions"
+import addAuth from '../auth0/auth0Decorator';
+import getCosmosDbConnection from '../cosmosdb/getComsosDbConnection';
+import { v4 as uuid } from 'uuid';
 
-const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
+const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest | any): Promise<void> {
     context.log('HTTP trigger function processed a request.');
-    const name = (req.query.name || (req.body && req.body.name));
-    const responseMessage = name
-        ? "Hello, " + name + ". This HTTP triggered function executed successfully."
-        : "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.";
+    console.log('in trips ')
+    const tripsCollection = await getCosmosDbConnection("vacation", "trips");
+
+    let resBody: any = {};
+
+    if(req.method === "GET"){
+        resBody = await findTripsForPerson(req.user.sub, tripsCollection)
+    }else if(req.method == "POST"){
+        resBody = await createNewTrip(req.user.sub, req.body, tripsCollection)
+    }
 
     context.res = {
-        // status: 200, /* Defaults to 200 */
-        body: responseMessage
-    };
-
+        status: 200, /* Defaults to 200 */
+        body: JSON.stringify(resBody)
+    }
+    return context.done();
 };
 
 
-const findTripsForPerson = (personUuid: string) => {
-
+const findTripsForPerson = async (auth0UID: string, collection: any) => {
+    return await collection.find({auth0UID: auth0UID}).toArray();
 }
 
-const createNewTrip = (trip: any) => {
-    
+const createNewTrip = async (auth0UID: string, reqBody: any, collection: any) => {
+    console.log('create new trip')
+    const newTrip = {
+        tripUuid: reqBody.tripUuid ? reqBody.tripUuid : uuid(),
+        auth0UID: auth0UID,
+        tripName: reqBody.tripName
+    }
+    console.log('before upsert ')
+    await collection.update({tripUuid: newTrip.tripUuid}, newTrip, {upsert: true})
+    console.log('after upsert')
+
+    return newTrip;
 }
 
-export default httpTrigger;
+export default addAuth(httpTrigger);

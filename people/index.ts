@@ -1,5 +1,4 @@
 import { AzureFunction, Context, HttpRequest } from "@azure/functions";
-import { runInNewContext } from "vm";
 import addAuth from '../auth0/auth0Decorator';
 import getCosmosDbConnection from '../cosmosdb/getComsosDbConnection';
 
@@ -9,6 +8,8 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
     const peopleCollection = await getCosmosDbConnection("vacation", "people");
 
     let resBody: any = {}
+
+    console.log("in the people api")
 
     if(req.method === "GET"){
         resBody = await getUsersPerson(req.user.sub, peopleCollection)
@@ -32,7 +33,8 @@ const getUsersPerson = async (auth0UID: string, collection: any) => {
 }
 
 const updateUsersPerson = async (auth0UID: string, reqBody: any, collection: any) => {
-    const userNameAlreadyExist: boolean = await collection.findOne({username: reqBody, auth0UID: {$not: auth0UID}})
+    console.log("in post function")
+    const userNameAlreadyExist: boolean = await collection.findOne({username: reqBody, auth0UID: {$ne: auth0UID}})
     if(userNameAlreadyExist){
         return {
             error: "User already exist"
@@ -43,7 +45,9 @@ const updateUsersPerson = async (auth0UID: string, reqBody: any, collection: any
         auth0UID: auth0UID,
         username: reqBody.username
     }
+    console.log("before update")
     await collection.update({auth0UID: auth0UID}, personToInsert, {upsert: true});
+    console.log("after update")
     return personToInsert;
 }
 
