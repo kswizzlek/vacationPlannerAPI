@@ -1,24 +1,29 @@
 import { AzureFunction, Context, HttpRequest } from "@azure/functions"
+import addAuth from '../auth0/auth0Decorator';
+import getCosmosDbConnection from '../cosmosdb/getComsosDbConnection';
 
 const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
     context.log('HTTP trigger function processed a request.');
-    const name = (req.query.name || (req.body && req.body.name));
-    const responseMessage = name
-        ? "Hello, " + name + ". This HTTP triggered function executed successfully."
-        : "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.";
+    const resBody = {}
+    
+    const peopleOnTripCollection = await getCosmosDbConnection("vacation", "peopleOnTrip");
 
     context.res = {
         // status: 200, /* Defaults to 200 */
-        body: responseMessage
+        body: resBody
     };
 
 };
 
-const findPeopleOnTrip = (tripUuid: string) => {
+const findPeopleOnTrip = (tripUuid: string, collection: any) => {
 
 }
 
-const addPersonToTrip = (personUuid: string, tripUuid) => {
+const findTripsPersonIsOn = (personUuid: string, collection: any) => {
+
+}
+
+const addPersonToTrip = (personUuid: string, tripUuid: string) => {
 
 }
 

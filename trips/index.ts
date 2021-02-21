@@ -5,15 +5,15 @@ import { v4 as uuid } from 'uuid';
 
 const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest | any): Promise<void> {
     context.log('HTTP trigger function processed a request.');
-    console.log('in trips ')
     const tripsCollection = await getCosmosDbConnection("vacation", "trips");
+    const peopleCollection = await getCosmosDbConnection("vacation", "people");
 
     let resBody: any = {};
-
-    if(req.method === "GET"){
-        resBody = await findTripsForPerson(req.user.sub, tripsCollection)
-    }else if(req.method == "POST"){
-        resBody = await createNewTrip(req.user.sub, req.body, tripsCollection)
+    if(req.method == "GET"){
+        resBody = await getTripByTripUuid(req.query.tripUuid, tripsCollection);
+    }
+    else if(req.method == "POST"){
+        resBody = await upsertNewTrip(req.user.sub, req.body, tripsCollection, peopleCollection)
     }
 
     context.res = {
@@ -24,20 +24,28 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
 };
 
 
-const findTripsForPerson = async (auth0UID: string, collection: any) => {
-    return await collection.find({auth0UID: auth0UID}).toArray();
+const getTripByTripUuid = async (tripUuid: string, tripsCollection: any) => {
+    return await tripsCollection.findOne({tripUuid: tripUuid});
 }
-
-const createNewTrip = async (auth0UID: string, reqBody: any, collection: any) => {
-    console.log('create new trip')
+const upsertNewTrip = async (auth0UID: string, reqBody: any, tripsCollection: any, peopleCollection: any) => {
     const newTrip = {
         tripUuid: reqBody.tripUuid ? reqBody.tripUuid : uuid(),
-        auth0UID: auth0UID,
-        tripName: reqBody.tripName
-    }
-    console.log('before upsert ')
-    await collection.update({tripUuid: newTrip.tripUuid}, newTrip, {upsert: true})
-    console.log('after upsert')
+        owner: auth0UID,
+        tripName: reqBody.tripName,
+        people: reqBody.people
+    };
+    await tripsCollection.update({tripUuid: newTrip.tripUuid}, newTrip, {upsert: true});
+
+    Promise.all(reqBody.people.forEach(async (person) => {
+        let personOnTrip = await peopleCollection.findOne({username: person.username});
+        const tripToAddToPerson = {
+            tripUuid: newTrip.tripUuid,
+            tripName: newTrip.tripName,
+            owner: personOnTrip.auth0UID === auth0UID ? true : false,
+        }
+        personOnTrip.trips = [tripToAddToPerson, ...personOnTrip.trips];
+        await peopleCollection.update({username: person.username}, personOnTrip, {upsert: true});
+    }));
 
     return newTrip;
 }
