@@ -4,6 +4,7 @@ import getCosmosDbConnection from '../cosmosdb/getComsosDbConnection';
 
 const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest | any): Promise<void> {
     context.log('HTTP trigger function processed a request.');
+    console.log("beginning of people request")
 
     const peopleCollection = await getCosmosDbConnection("vacation", "people");
 
@@ -43,7 +44,8 @@ const updateUsersPerson = async (auth0UID: string, reqBody: any, collection: any
 
     const personToInsert = {
         auth0UID: auth0UID,
-        username: reqBody.username
+        username: reqBody.username,
+        trips: []
     }
     console.log("before update")
     await collection.update({auth0UID: auth0UID}, personToInsert, {upsert: true});
