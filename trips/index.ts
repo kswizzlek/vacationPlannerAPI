@@ -51,12 +51,9 @@ const upsertNewTrip = async (auth0UID: string, reqBody: any, tripsCollection: an
 }
 
 const addPersonToTrip = async (auth0UID: string, reqBody: any, tripsCollection: any, peopleCollection: any) => {
-    let person = {};
-    let trip = {};
-    await Promise.all([
-        peopleCollection.find({auth0UID: auth0UID}).then(p => person = p),
-        tripsCollection.find({tripUuid: reqBody.tripUuid}).then(t => trip = t)
-    ]);
+    let person = await peopleCollection.findOne({auth0UID: auth0UID});
+    let trip = await tripsCollection.find({tripUuid: reqBody.tripUuid});
+
     person.trips = [
         {
             tripUuid: trip.tripUuid,
@@ -74,7 +71,7 @@ const addPersonToTrip = async (auth0UID: string, reqBody: any, tripsCollection: 
     ];
     Promise.all([
         peopleCollection.update({auth0UID: auth0UID}, person, {upsert: true}),
-        tripsCollection.update({tripUuid: tripUuid}, trip, {upsert: true})
+        tripsCollection.update({tripUuid: trip.tripUuid}, trip, {upsert: true})
     ])
     return {
         updatedPerson: person,
