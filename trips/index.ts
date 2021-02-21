@@ -11,9 +11,10 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
     let resBody: any = {};
     if(req.method == "GET"){
         resBody = await getTripByTripUuid(req.query.tripUuid, tripsCollection);
-    }
-    else if(req.method == "POST"){
-        resBody = await upsertNewTrip(req.user.sub, req.body, tripsCollection, peopleCollection)
+    }else if(req.method == "POST" && req.params.includes("addPersonToTrip")){
+        resBody = await addPersonToTrip(req.user.sub, req.body, tripsCollection, peopleCollection);
+    }else if(req.method == "POST"){
+        resBody = await upsertNewTrip(req.user.sub, req.body, tripsCollection, peopleCollection);
     }
 
     context.res = {
@@ -46,8 +47,39 @@ const upsertNewTrip = async (auth0UID: string, reqBody: any, tripsCollection: an
         personOnTrip.trips = [tripToAddToPerson, ...personOnTrip.trips];
         await peopleCollection.update({username: person.username}, personOnTrip, {upsert: true});
     }));
-
     return newTrip;
+}
+
+const addPersonToTrip = async (auth0UID: string, reqBody: any, tripsCollection: any, peopleCollection: any) => {
+    let person = {};
+    let trip = {};
+    await Promise.all([
+        peopleCollection.find({auth0UID: auth0UID}).then(p => person = p),
+        tripsCollection.find({tripUuid: reqBody.tripUuid}).then(t => trip = t)
+    ]);
+    person.trips = [
+        {
+            tripUuid: trip.tripUuid,
+            tripName: trip.tripName,
+            owner: false
+        },
+        ...person.trips
+    ];
+    trip.people = [
+        {
+            auth0UID: person.auth0UID,
+            username: person.username
+        },
+        ...trip.people
+    ];
+    Promise.all([
+        peopleCollection.update({auth0UID: auth0UID}, person, {upsert: true}),
+        tripsCollection.update({tripUuid: tripUuid}, trip, {upsert: true})
+    ])
+    return {
+        updatedPerson: person,
+        updatedTrip: trip
+    }
 }
 
 export default addAuth(httpTrigger);
