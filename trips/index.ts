@@ -8,11 +8,12 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
     const tripsCollection = await getCosmosDbConnection("vacation", "trips");
     const peopleCollection = await getCosmosDbConnection("vacation", "people");
 
+    console.log("inside the trips endpoint")
+    console.log(req)
+
     let resBody: any = {};
     if(req.method == "GET"){
         resBody = await getTripByTripUuid(req.query.tripUuid, tripsCollection);
-    }else if(req.method == "POST" && req.params.includes("addPersonToTrip")){
-        resBody = await addPersonToTrip(req.user.sub, req.body, tripsCollection, peopleCollection);
     }else if(req.method == "POST"){
         resBody = await upsertNewTrip(req.user.sub, req.body, tripsCollection, peopleCollection);
     }
@@ -48,35 +49,6 @@ const upsertNewTrip = async (auth0UID: string, reqBody: any, tripsCollection: an
         await peopleCollection.update({username: person.username}, personOnTrip, {upsert: true});
     }));
     return newTrip;
-}
-
-const addPersonToTrip = async (auth0UID: string, reqBody: any, tripsCollection: any, peopleCollection: any) => {
-    let person = await peopleCollection.findOne({auth0UID: auth0UID});
-    let trip = await tripsCollection.find({tripUuid: reqBody.tripUuid});
-
-    person.trips = [
-        {
-            tripUuid: trip.tripUuid,
-            tripName: trip.tripName,
-            owner: false
-        },
-        ...person.trips
-    ];
-    trip.people = [
-        {
-            auth0UID: person.auth0UID,
-            username: person.username
-        },
-        ...trip.people
-    ];
-    Promise.all([
-        peopleCollection.update({auth0UID: auth0UID}, person, {upsert: true}),
-        tripsCollection.update({tripUuid: trip.tripUuid}, trip, {upsert: true})
-    ])
-    return {
-        updatedPerson: person,
-        updatedTrip: trip
-    }
 }
 
 export default addAuth(httpTrigger);
