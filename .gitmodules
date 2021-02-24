@@ -1,0 +1,3 @@
+[submodule "shared/vacationPlannerShared"]
+	path = shared/vacationPlannerShared
+	url = https://github.com/kswizzlek/vacationPlannerShared.git
