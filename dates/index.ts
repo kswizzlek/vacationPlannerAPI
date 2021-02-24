@@ -17,10 +17,19 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
         resBody = await addDateToTrip(req.body, datesCollection);
     }
 
+    const updates = [{
+        target: 'dates',
+        arguments: [resBody]
+    }];
+
+    context.bindings.signalRMessages = updates;
+
     context.res = {
         // status: 200, /* Defaults to 200 */
         body: resBody
     };
+
+    context.done();
 };
 
 const getTripDates = async (tripUuid: string, datesCollection: any) => {

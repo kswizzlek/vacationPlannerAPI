@@ -22,6 +22,13 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
         status: 200, /* Defaults to 200 */
         body: JSON.stringify(resBody)
     }
+
+    const updates = [{
+        target: 'newTrip',
+        arguments: [resBody]
+    }];
+
+    context.bindings.signalRMessages = updates;
     return context.done();
 };
 

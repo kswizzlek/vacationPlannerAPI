@@ -5,10 +5,6 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "methods": [
-        "get",
-        "post"
-      ]
     },
     {
       "type": "http",
@@ -16,12 +12,12 @@
       "name": "res"
     },
     {
-      "type": "signalR",
-      "name": "signalRMessages",
-      "connectionString": "AzureSignalRConnectionString",
+      "type": "signalRConnectionInfo",
+      "name": "connectionInfo",
       "hubName": "dates",
-      "direction": "out"
-    }
+      "direction": "in",
+      "connectionStringSetting": "AzureSignalRConnectionString"
+  }
   ],
-  "scriptFile": "../dist/dates/index.js"
+  "scriptFile": "../dist/negotiate/index.js"
 }
