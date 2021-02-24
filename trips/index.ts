@@ -8,8 +8,8 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
     const tripsCollection = await getCosmosDbConnection("vacation", "trips");
     const peopleCollection = await getCosmosDbConnection("vacation", "people");
 
-    console.log("inside the trips endpoint")
-    console.log(req)
+    console.log("inside the trips endpoint");
+    console.log(req);
 
     let resBody: any = {};
     if(req.method == "GET"){
