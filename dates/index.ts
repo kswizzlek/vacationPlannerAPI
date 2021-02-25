@@ -15,14 +15,13 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
         resBody = await getTripDates(req.query.tripUuid, datesCollection);
     }else if(req.method === "POST"){
         resBody = await addDateToTrip(req.body, datesCollection);
+        const updates = [{
+            groupName: req.query.tripUuid,
+            target: 'dates',
+            arguments: [resBody]
+        }];
+        context.bindings.signalRMessages = updates;
     }
-
-    const updates = [{
-        target: 'dates',
-        arguments: [resBody]
-    }];
-
-    context.bindings.signalRMessages = updates;
 
     context.res = {
         // status: 200, /* Defaults to 200 */
