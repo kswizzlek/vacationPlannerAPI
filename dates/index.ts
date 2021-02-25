@@ -16,7 +16,7 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
     }else if(req.method === "POST"){
         resBody = await addDateToTrip(req.body, datesCollection);
         const updates = [{
-            groupname: req.query.tripUuid,
+            groupName: req.query.tripUuid,
             target: 'dates',
             arguments: [resBody]
         }];
