@@ -8,9 +8,6 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
     const tripsCollection = await getCosmosDbConnection("vacation", "trips");
     const peopleCollection = await getCosmosDbConnection("vacation", "people");
 
-    console.log("inside the trips endpoint");
-    console.log(req);
-
     let resBody: any = {};
     if(req.method == "GET"){
         resBody = await getTripByTripUuid(req.query.tripUuid, tripsCollection);
@@ -24,6 +21,7 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
     }
 
     const updates = [{
+        groupName: req.query.tripUuid,
         target: 'newTrip',
         arguments: [resBody]
     }];
