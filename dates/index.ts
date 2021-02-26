@@ -18,7 +18,6 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
         console.log(req.body.tripUuid)
         const updates = [{
             target: 'dates',
-            userId: req.user.sub,
             groupName: req.body.tripUuid,
             arguments: [resBody]
         }];
