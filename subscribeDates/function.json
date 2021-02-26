@@ -6,7 +6,6 @@
       "direction": "in",
       "name": "req",
       "methods": [
-        "get",
         "post"
       ]
     },
@@ -17,11 +16,11 @@
     },
     {
       "type": "signalR",
-      "name": "signalRMessages",
+      "direction": "out",
+      "name": "signalRGroupActions",
       "connectionStringSetting": "AzureSignalRConnectionString",
-      "hubName": "dates",
-      "direction": "out"
+      "hubName": "captions"
     }
   ],
-  "scriptFile": "../dist/dates/index.js"
+  "scriptFile": "../dist/subscribeDates/index.js"
 }
