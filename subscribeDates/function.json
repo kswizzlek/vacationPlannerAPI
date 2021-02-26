@@ -19,7 +19,7 @@
       "direction": "out",
       "name": "signalRGroupActions",
       "connectionStringSetting": "AzureSignalRConnectionString",
-      "hubName": "captions"
+      "hubName": "dates"
     }
   ],
   "scriptFile": "../dist/subscribeDates/index.js"
