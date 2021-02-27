@@ -12,6 +12,7 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
     let resBody = {};
 
     if(req.method === "GET"){
+        console.log("geting trip locations----------------")
         resBody = await getTripLocations(req.query.tripUuid, locationsCollection);
     }else if(req.method === "POST" && operation === "vote"){
         resBody = await voteOnLocation(req.body, locationsCollection)
@@ -29,7 +30,11 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
 };
 
 const getTripLocations = async (tripUuid: string, locationsCollection: any) => {
-    return await locationsCollection.findOne({tripUuid: tripUuid});
+    let locations = {};
+    await locationsCollection.findOne({tripUuid: tripUuid}).then(res => {
+        locations = res;
+    }).catch(e => console.log(e)); 
+    return locations !== null ? locations : {};
 }
 
 const upsertLocationToTrip = async (reqBody: any, locationsCollection: any) => {
