@@ -6,7 +6,7 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
     context.bindings.signalRGroupActions = [{
         userId: req.body.userId,
         groupName: req.body.tripUuid,
-        action: 'add'
+        action: req.body.action
     }];
     context.done();
 };
