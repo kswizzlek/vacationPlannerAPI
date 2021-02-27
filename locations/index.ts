@@ -1,7 +1,6 @@
 import { AzureFunction, Context, HttpRequest } from "@azure/functions"
 import addAuth from '../auth0/auth0Decorator';
 import getCosmosDbConnection from '../cosmosdb/getComsosDbConnection';
-import { Location, Locations } from "../shared/vacationPlannerShared/models/locations";
 import { v4 as uuid } from 'uuid';
 
 const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest | any): Promise<void> {
@@ -39,7 +38,7 @@ const getTripLocations = async (tripUuid: string, locationsCollection: any) => {
 
 const upsertLocationToTrip = async (reqBody: any, locationsCollection: any) => {
     reqBody.locationToAdd.locationUuid = reqBody.locationToAdd.locationUuid || uuid();
-    let tripLocations: Locations = await locationsCollection.findOne({tripUuid: reqBody.tripUuid});
+    let tripLocations: any = await locationsCollection.findOne({tripUuid: reqBody.tripUuid});
     if(!tripLocations){
         tripLocations = {
             tripUuid: reqBody.tripUuid,
@@ -52,7 +51,7 @@ const upsertLocationToTrip = async (reqBody: any, locationsCollection: any) => {
 }
 
 const voteOnLocation = async (reqBody: any, locationsCollection: any) => {
-    const tripLocations: Locations = await locationsCollection.findOne({tripUuid: reqBody.tripUuid});
+    const tripLocations: any = await locationsCollection.findOne({tripUuid: reqBody.tripUuid});
     tripLocations.locations.map(l => {
         if(l.locationUuid === reqBody.locationUuid){
             const userVote = l.locationVotes.find(lv => lv.person.username === reqBody.person.username);
@@ -71,7 +70,7 @@ const voteOnLocation = async (reqBody: any, locationsCollection: any) => {
 }
 
 const deleteLocation = async (reqBody: any, locationsCollection: any) => {
-    const tripLocations: Locations = await locationsCollection.findOne({tripUuid: reqBody.tripUuid});
+    const tripLocations: any = await locationsCollection.findOne({tripUuid: reqBody.tripUuid});
     tripLocations.locations = tripLocations.locations.filter(l => l.locationUuid !== reqBody.locationUuid);
     await locationsCollection.update({tripUuid: reqBody.tripUuid}, tripLocations, {upsert: true})
     return tripLocations;
